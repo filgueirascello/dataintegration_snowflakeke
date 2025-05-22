@@ -1,10 +1,3 @@
-"""
-# CAFE
-
-Esta é uma DAG que faz o processo de carga do fluxo de DW da cafeteria.
-
-"""
-
 import pendulum
 from airflow.models.dag import DAG
 from airflow.operators.python import PythonOperator
@@ -12,7 +5,6 @@ from airflow.operators.bash_operator import BashOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.hooks.base import BaseHook
 import snowflake.connector as sc
-#from airflow.providers.snowflake.operators.snowflake import SnowflakeOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 import os
 
@@ -30,7 +22,6 @@ with DAG(
     description="esta é a descrição da DAG",
 ):
 
-    # Obtém a conexão do banco de dados do Airflow
     def obter_credenciais_conexao(conn_id):
         conexao = BaseHook.get_connection(f"{conn_id}")
 
@@ -62,7 +53,7 @@ PUT file://dags/{arquivo} @IMPACTA.RAW.STG_RAW AUTO_COMPRESS=FALSE OVERWRITE = T
         op_args=[f"{meu_arquivo}"],
         doc_md="Task que envia o arquivo csv para a nuvem do Snowflake",
     )
-    # Executar a consulta usando SnowflakeOperator
+    
     sql1 = """
 CREATE or replace TABLE "IMPACTA"."RAW"."CAFE" ( transaction_id NUMBER(38, 0) , transaction_date DATE , transaction_time TIME , store_id NUMBER(38, 0) , store_location VARCHAR , product_id NUMBER(38, 0) , transaction_qty NUMBER(38, 0) , unit_price NUMBER(38, 1) , product_category VARCHAR , product_type VARCHAR , product_detail VARCHAR , Size VARCHAR , Total_bill NUMBER(38, 1) , Month_Name VARCHAR , Day_Name VARCHAR , Hour NUMBER(38, 0) , Day_of_Week NUMBER(38, 0) , Month NUMBER(38, 0) ); 
 
@@ -85,14 +76,7 @@ FILE_FORMAT = '"IMPACTA"."RAW"."temp_file_format_cafe"'
 ON_ERROR=ABORT_STATEMENT 
 ;
 """
-    # copy_file = SnowflakeOperator(
-    #     task_id="copy_file",
-    #     sql=sql1,
-    #     snowflake_conn_id=minha_conexao,  # Nome da conexão configurada no Airflow para o Snowflake
-    #     autocommit=True,
-    #     split_statements=True,
-    # )
-
+    
 
     copy_file = SQLExecuteQueryOperator(
         task_id="copy_file",
@@ -101,7 +85,6 @@ ON_ERROR=ABORT_STATEMENT
         autocommit=True
     )
 
-### código inserido
 
     sql_dim_produto = """
 MERGE INTO IMPACTA.CAFE.DIM_PRODUTO AS destino
@@ -125,15 +108,6 @@ WHEN NOT MATCHED THEN
     INSERT (PRODUCT_ID, PRODUCT_CATEGORY, PRODUCT_TYPE, PRODUCT_DETAIL, SIZE) 
     VALUES (origem.PRODUCT_ID, origem.PRODUCT_CATEGORY, origem.PRODUCT_TYPE, origem.PRODUCT_DETAIL, origem.SIZE);
 """
-
-    # Task: carregar dimensão produto
-    # merge_dim_produto = SnowflakeOperator(
-    #     task_id="merge_dim_produto",
-    #     sql=sql_dim_produto,
-    #     snowflake_conn_id=minha_conexao,
-    #     autocommit=True,
-    #     split_statements=True,
-    # )
 
 
     dim_produto = SQLExecuteQueryOperator(
@@ -162,19 +136,10 @@ WHEN NOT MATCHED THEN
 """
 
 
-    # Task: carregar dimensão loja
-    # merge_dim_loja = SnowflakeOperator(
-    #     task_id="merge_dim_loja",
-    #     sql=sql_dim_loja,
-    #     snowflake_conn_id=minha_conexao,
-    #     autocommit=True,
-    #     split_statements=True,
-    # )
-
     dim_loja = SQLExecuteQueryOperator(
         task_id="dim_loja",
         sql=sql_dim_loja,
-        conn_id=minha_conexao,  # Nome da conexão configurada no Airflow para o Snowflake
+        conn_id=minha_conexao,  
         autocommit=True
     )
 
@@ -223,40 +188,22 @@ WHEN NOT MATCHED THEN
 """
 
 
-    # Task: carregar fato vendas
-    # merge_fato_vendas = SnowflakeOperator(
-    #     task_id="merge_fato_vendas",
-    #     sql=sql_fato_vendas,
-    #     snowflake_conn_id=minha_conexao,
-    #     autocommit=True,
-    #     split_statements=True,
-    # )
-
-
     fato_vendas = SQLExecuteQueryOperator(
         task_id="fato_vendas",
         sql=sql_fato_vendas,
-        conn_id=minha_conexao,  # Nome da conexão configurada no Airflow para o Snowflake
+        conn_id=minha_conexao,  
         autocommit=True
     )
 
-### código inserido
 
     sql_remove = """
 REMOVE '@"IMPACTA"."RAW"."STG_RAW"/' PATTERN = '.*coffee_shop_sales_.*csv'
 """
-    # cafe_remove_arquivo = SnowflakeOperator(
-    #     task_id="cafe_remove_arquivo",
-    #     sql=sql_remove,
-    #     snowflake_conn_id=minha_conexao,
-    #     autocommit=True,
-    #     split_statements=True,
-    # )
-
+   
     cafe_remove_arquivo = SQLExecuteQueryOperator(
         task_id="cafe_remove_arquivo",
         sql=sql_remove,
-        conn_id=minha_conexao,  # Nome da conexão configurada no Airflow para o Snowflake
+        conn_id=minha_conexao,  
         autocommit=True
     )
 
