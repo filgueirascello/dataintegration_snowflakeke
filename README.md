@@ -232,3 +232,14 @@ ORDER BY ve.MONTH ASC;
 | April    | 119,175.9    |
 | May      | 157,042.3    |
 | June     | 166,812.8    |
+
+
+## ---------------------------------------------------------------------
+
+# Dag
+
+O código 01_cafe.py está em anexo no repositório. Abaixo segue a estrutura da dag e a comprovação gráfica da execução com sucesso com as informações de data, duração e status.
+
+![Fig 1](1.png)
+
+![alt text](2.png)
