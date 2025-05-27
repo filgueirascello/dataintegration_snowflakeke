@@ -243,3 +243,31 @@ O código 01_cafe.py está em anexo no repositório. Abaixo segue a estrutura da
 ![Fig 1](1.png)
 
 ![alt text](2.png)
+
+
+
+## ---------------------------------------------------------------------
+
+# SNOWFLAKE
+
+Abaixo será mostrado alguns prints como evidência de integração no snowflake
+
+
+* DIM_DATE
+![alt text](image.png)
+
+
+* DIM_LOJA
+![alt text](image-1.png)
+
+
+* DIM_PRODUTO
+![alt text](image-2.png)
+
+* FATO_VENDAS
+![alt text](image-3.png)
+
+
+Segue também um histórico de datas da criação do projeto:
+
+![alt text](image-4.png)
